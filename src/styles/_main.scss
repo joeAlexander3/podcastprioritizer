@@ -1,0 +1,191 @@
+/******************/
+/* HEADER STYLES */
+/******************/
+.fas {
+  color: $darkGreen;
+}
+
+span{
+  color: $darkGreen;
+  font-weight: 700;
+}
+
+/********************************/
+/*  MAP AND TRANSIT SECTION    */
+/*******************************/
+.transitMap {
+  padding: 20px;
+  margin: 50px 0;
+  width: 100%;
+  display: flex;
+  background-color: $black;
+  border-radius: 5px;
+  justify-content: space-around;
+  flex-wrap: wrap;
+
+  .map{
+    // margin-left:50px;
+    border: solid 2px $darkGreen;
+    width: 300px;
+    margin: 10px;
+  }
+
+  .transit {
+  margin: 10px; 
+  border: solid 2px $lightGreen;
+  width: 300px;
+  height: 200px;
+  border-radius: 20px;
+  padding: 10px;
+  color: $lightGreen;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-self: center;
+
+    li{
+      list-style-type: none;
+      text-align: center;
+
+      .mode {
+        font-size: 30px;
+        display: inline-block;
+        margin-right: 5px;
+      }
+    }
+  }
+}
+
+/*****************   */
+/* PODCAST LIST    */
+/***************** */
+.podcastContainer {
+  display: flex;
+  flex-direction: column;
+  background-color: $black;
+  border-radius: 5px;
+  color: white;
+  padding: 10px;
+  justify-content: space-between;
+  text-align: center;
+  transition: all 0.3s;
+
+  .podcastButton {
+    margin-bottom: 10px;
+    background-color: $lightGreen;
+    text-align: center;
+    background-color: $black;
+    border: 3px solid $lightGreen;
+    cursor: pointer;
+    color: white;
+
+    &:focus,
+    &:hover {
+      border: 3px solid $darkGreen;
+    }
+
+    p {
+      width: 200px;
+      margin: 10px auto 0 auto;
+      padding: 5px;
+    }
+  }
+
+  a{
+    color: white;
+  }
+}
+
+.podcastSave {
+  align-self: center;
+
+  &:hover, 
+  &:focus{
+    scale: 1.2;
+  }
+
+  button {
+    cursor: pointer;
+
+    &:hover, 
+    &:focus {
+      background-color: $darkGreen;
+      color: white;      
+    }
+  }
+}
+
+.suggestion p{
+    color: $darkGreen;
+}
+
+.podcastContainer a:hover, 
+.podcastContainer a:focus{
+  color: $darkGreen;
+  cursor: pointer;
+}
+
+.podcastContainer a{
+  text-decoration: underline;
+}
+
+.suggestion {  
+  text-align: center;
+}
+
+/******************/
+/* ERROR POPUP    */
+/******************/
+.popup {
+  padding: 10px;
+  position: fixed;
+  background: #001e31;
+  opacity: 1;
+  border-radius: 5px;
+
+  top: 25%;
+  width: 400px;
+  height: 300px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.popup p {
+  text-align: center;
+  color: white;
+  margin: auto;
+  font-size: 3rem;
+}
+
+.popup button {
+  padding: 20px;
+  margin: 0 auto;
+  width: 150px;
+}
+
+.popupBack {
+  background-color: rgba(236, 230, 230, 0.75);
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  display:flex;
+  justify-content: center;
+}
+
+/******************/
+/* RESET BUTTON   */
+/******************/
+.resetButton{
+  margin: 20px auto 0 auto;
+  display: block;
+}
+
+.resetButton:hover,
+.resetButton:focus {
+  background-color: $darkGreen;
+  color: white;
+}
