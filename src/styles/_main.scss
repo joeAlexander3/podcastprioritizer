@@ -136,46 +136,12 @@ span{
 /******************/
 /* ERROR POPUP    */
 /******************/
-.popup {
-  padding: 10px;
-  position: fixed;
-  background: #001e31;
-  opacity: 1;
-  border-radius: 5px;
-
-  top: 25%;
-  width: 400px;
-  height: 300px;
-
-  display: flex;
-  flex-direction: column;
-}
-
-.popup p {
+.errorMessage {
   text-align: center;
-  color: white;
-  margin: auto;
-  font-size: 3rem;
+  color: red;
+  font-size: 2rem;
+  margin-top: 50px;
 }
-
-.popup button {
-  padding: 20px;
-  margin: 0 auto;
-  width: 150px;
-}
-
-.popupBack {
-  background-color: rgba(236, 230, 230, 0.75);
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 10;
-  display:flex;
-  justify-content: center;
-}
-
 /******************/
 /* RESET BUTTON   */
 /******************/

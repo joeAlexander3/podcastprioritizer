@@ -1,20 +1,20 @@
 import React, { Component } from "react";
 import axios from "axios";
 import MapMode from './MapMode'
-import PodcastInput from "./PodcastInput";
 import PodcastItem from "./PodcastItem";
 import PodcastMenu from './PodcastMenu';
 import firebase from "./database";
 import Error from "./Error";
 import HeaderSection from "./HeaderSection";
+import InputForm from './InputForm';
 import {podcastAPI, mapquestAPI} from './api.js';
+
+const modes = ["bicycle", "pedestrian", "fastest"]
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      modes: ["bicycle", "pedestrian", "fastest"],
-      genres: [],
       transitTime: {},
       podcasts: [],
       mapUrl: "",
@@ -24,31 +24,22 @@ class App extends Component {
       popUpError: false,
       tooBig: false,
       menuOpen: false,
-      apiError: false
-    };
-
-    this.hideError = this.hideError.bind(this);
-    this.showError = this.showError.bind(this);
-  }
-
-  /*****************/
-  /* Error Popups */
-  /***************/
-  // Set the popupError to false to hide the error component
-  hideError() {
-    this.setState({
-      popUpError: false,
       apiError: false,
-      podcasts: []
-    });
+      podcastInput: "",
+      userInputFrom: "",
+      userInputTo: "",
+    };
   }
 
-  // Set popupError to true to show the error component
-  showError() {
+  /************************/
+  /*   handleTextInput   */
+  /**********************/
+  handleTextChange = (e) => {
+    e.preventDefault();
     this.setState({
-      popUpError: true
+      [e.target.name]: e.target.value,
     });
-  }
+  };
 
   /************************/
   /* User Authentication */
@@ -122,7 +113,7 @@ class App extends Component {
   /**************/
   /* API CALLS */
   /*************/
-  handleSubmit = (e, from, to) => {
+  handleSubmit = (e, from, to, podcast) => {
     // Prevent default
     e.preventDefault();
 
@@ -145,7 +136,6 @@ class App extends Component {
       this.setState({ mapUrl: res.request.responseURL });
     }).catch(() => {
       this.setState({
-        popUpError: true,
         apiError: true
       })
     });
@@ -165,11 +155,10 @@ class App extends Component {
         if (res.data.route.distance > 100) {
           this.setState({
             tooBig: true,
-            popUpError: true,
           })
         } else {
           // For each mode of transportation, find the transit time, convert it to minutes and save it to state
-          this.state.modes.forEach((mode) => {
+          modes.forEach((mode) => {
             axios({
               url: `https://www.mapquestapi.com/directions/v2/route`,
               method: `GET`,
@@ -189,52 +178,70 @@ class App extends Component {
                   tooBig: false
                 });
               })
+              .then(()=>{
+                axios({
+                  url: `https://listen-api.listennotes.com/api/v2/search`,
+                  method: `GET`,
+                  responseType: `json`,
+                  headers: {
+                    "X-ListenAPI-Key": podcastAPI,
+                  },
+                  params: {
+                    q: podcast,
+                    len_max: this.state.transitTime.pedestrian,
+                  },
+                }).then((res) => {
+                  this.setState({
+                    podcasts: res.data.results,
+                  });
+                }).catch(() => {
+                  this.setState({
+                    apiError: true
+                  })
+                });
+              })
               .catch(() => {
                 this.setState({
                   popUpError: true,
-                  apiError: true
                 })
               });
-          })
+          });
         }
       }
     ).catch(() => {
       this.setState({
-        popUpError: true,
         apiError: true
       })
     });
   };
 
   // making an API call for PODCAST
-  podcastCall = (e, inputText, genreSel) => {
-    // Prevent default
-    e.preventDefault();
+  // podcastCall = (e, inputText) => {
+  //   // Prevent default
+  //   e.preventDefault();
 
-    // call the listennotes API and search for podcasts
-    axios({
-      url: `https://listen-api.listennotes.com/api/v2/search`,
-      method: `GET`,
-      responseType: `json`,
-      headers: {
-        "X-ListenAPI-Key": podcastAPI,
-      },
-      params: {
-        q: inputText,
-        len_max: this.state.transitTime.pedestrian,
-        genre_ids: genreSel,
-      },
-    }).then((res) => {
-      this.setState({
-        podcasts: res.data.results,
-      });
-    }).catch(() => {
-      this.setState({
-        popUpError: true,
-        apiError: true
-      })
-    });
-  };
+  //   // call the listennotes API and search for podcasts
+  //   axios({
+  //     url: `https://listen-api.listennotes.com/api/v2/search`,
+  //     method: `GET`,
+  //     responseType: `json`,
+  //     headers: {
+  //       "X-ListenAPI-Key": podcastAPI,
+  //     },
+  //     params: {
+  //       q: inputText,
+  //       len_max: this.state.transitTime.pedestrian,
+  //     },
+  //   }).then((res) => {
+  //     this.setState({
+  //       podcasts: res.data.results,
+  //     });
+  //   }).catch(() => {
+  //     this.setState({
+  //       apiError: true
+  //     })
+  //   });
+  // };
 
   // function to modify time from 00:00:00 format to minutes
   timeChange = (time) => {
@@ -314,40 +321,38 @@ class App extends Component {
           {this.state.menuOpen && <PodcastMenu key="podcastMenu" loggedIn={this.state.loggedIn} podcastList={this.state.podcastList} logout={this.logout} login={this.login} deletePodcast={this.deletePodcast} />}
 
           {/* FORM INPUT */}
-          <PodcastInput inputText={this.podcastCall} handleSubmit={this.handleSubmit} error={this.state} hideErrorWindow={this.hideError} showErrorWindow={this.showError} />
+          <InputForm handleTextChange={this.handleTextChange} handleSubmit={this.handleSubmit} userInputFrom={this.state.userInputFrom} userInputTo={this.state.userInputTo} podcastInput={this.state.podcastInput} />
 
           {/* SHOW MAP AND TRANSIT TIMES FOR EACH MODE OF TRANSPORTATION */}
-          {/* var message = speed >= 120 ? 'Too Fast' : (speed >= 80 ? 'Fast' : 'OK'); */}
           {
-            this.state.apiError ? <Error hideErrorWindow={this.hideError} apiError={this.state.apiError} /> :
-            this.state.popUpError && this.state.tooBig ? <Error hideErrorWindow={this.hideError} /> : (
-              !this.state.tooBig ?
-                <div>
-                  <MapMode map={this.state.mapUrl} transitTime={this.state.transitTime} />
-                  <ul>
-                    {
-                      this.state.podcasts.map((podcast) => {
-                        const { id, image, title_original, audio_length_sec, audio, listennotes_url } = podcast
-                        const { loggedIn, transitTime } = this.state
-                        return (
-                          <PodcastItem
-                            key={id}
-                            image={image}
-                            title={title_original}
-                            length={audio_length_sec}
-                            transitTime={transitTime}
-                            savePodcast={this.savePodcast}
-                            audio={audio}
-                            id={id}
-                            loggedIn={loggedIn}
-                            url={listennotes_url}
-                          />
-                        );
-                      })
-                    }
-                  </ul>
-                </div> : null
-            )
+            this.state.apiError 
+              ? <Error>There was a problem with the API. Please try searching again.</Error>
+              : this.state.tooBig 
+                ? <Error>The travel distance is too large (more than 320KM). Please try searching for a closer destination.</Error>
+                : <div>
+                      <MapMode map={this.state.mapUrl} transitTime={this.state.transitTime} />
+                      <ul>
+                        {
+                          this.state.podcasts.map((podcast) => {
+                            const { loggedIn, transitTime } = this.state
+                            return (
+                              <PodcastItem
+                                key={podcast.id}
+                                image={podcast.image}
+                                title={podcast.title_original}
+                                length={podcast.audio_length_sec}
+                                transitTime={transitTime}
+                                savePodcast={this.savePodcast}
+                                audio={podcast.audio}
+                                id={podcast.id}
+                                loggedIn={loggedIn}
+                                url={podcast.listennotes_url}
+                              />
+                            );
+                          })
+                        }
+                      </ul>
+                    </div>
           }
 
           {/* CLEAR THE LIST OF PODCAST RESULTS */}
