@@ -21,7 +21,6 @@ class App extends Component {
       loggedIn: false,
       userId: "anonymous",
       podcastList: [],
-      popUpError: false,
       tooBig: false,
       menuOpen: false,
       apiError: false,
@@ -149,8 +148,7 @@ class App extends Component {
         from: from,
         to: to,
       },
-    })
-      .then((res) => {
+    }).then((res) => {
         // If distance is greater than 100 miles, do not continue and show error
         if (res.data.route.distance > 100) {
           this.setState({
@@ -169,79 +167,48 @@ class App extends Component {
                 to: to,
                 routeType: mode,
               },
-            })
-              .then((res) => {
+            }).then((res) => {
                 const timeCopy = { ...this.state.transitTime }
                 timeCopy[mode] = this.timeChange(res.data.route.formattedTime);
                 this.setState({
                   transitTime: timeCopy,
                   tooBig: false
                 });
-              })
-              .then(()=>{
-                axios({
-                  url: `https://listen-api.listennotes.com/api/v2/search`,
-                  method: `GET`,
-                  responseType: `json`,
-                  headers: {
-                    "X-ListenAPI-Key": podcastAPI,
-                  },
-                  params: {
-                    q: podcast,
-                    len_max: this.state.transitTime.pedestrian,
-                  },
-                }).then((res) => {
-                  this.setState({
-                    podcasts: res.data.results,
-                  });
-                }).catch(() => {
-                  this.setState({
-                    apiError: true
-                  })
-                });
-              })
-              .catch(() => {
+              }).catch(() => {
                 this.setState({
-                  popUpError: true,
+                  apiError: true,
                 })
               });
-          });
+          })
         }
       }
-    ).catch(() => {
+    ).then(() => {
+      axios({
+        url: `https://listen-api.listennotes.com/api/v2/search`,
+        method: `GET`,
+        responseType: `json`,
+        headers: {
+          "X-ListenAPI-Key": podcastAPI,
+        },
+        params: {
+          q: podcast,
+          len_max: this.state.transitTime.pedestrian,
+        },
+      }).then((res) => {
+        this.setState({
+          podcasts: res.data.results,
+        });
+      }).catch(() => {
+        this.setState({
+          apiError: true
+        })
+      });
+    }).catch(() => {
       this.setState({
         apiError: true
       })
     });
   };
-
-  // making an API call for PODCAST
-  // podcastCall = (e, inputText) => {
-  //   // Prevent default
-  //   e.preventDefault();
-
-  //   // call the listennotes API and search for podcasts
-  //   axios({
-  //     url: `https://listen-api.listennotes.com/api/v2/search`,
-  //     method: `GET`,
-  //     responseType: `json`,
-  //     headers: {
-  //       "X-ListenAPI-Key": podcastAPI,
-  //     },
-  //     params: {
-  //       q: inputText,
-  //       len_max: this.state.transitTime.pedestrian,
-  //     },
-  //   }).then((res) => {
-  //     this.setState({
-  //       podcasts: res.data.results,
-  //     });
-  //   }).catch(() => {
-  //     this.setState({
-  //       apiError: true
-  //     })
-  //   });
-  // };
 
   // function to modify time from 00:00:00 format to minutes
   timeChange = (time) => {
@@ -306,6 +273,7 @@ class App extends Component {
   /* Render Method */
   /****************/
   render() {
+    const {podcasts} = this.state;
     return (
 
       <div className="App">
@@ -331,10 +299,12 @@ class App extends Component {
                 ? <Error>The travel distance is too large (more than 320KM). Please try searching for a closer destination.</Error>
                 : <div>
                       <MapMode map={this.state.mapUrl} transitTime={this.state.transitTime} />
-                      <ul>
+                      {podcasts === [] 
+                      ? <Error>No podcasts were found. Please try searching again.</Error> 
+                      :<ul>
                         {
-                          this.state.podcasts.map((podcast) => {
-                            const { loggedIn, transitTime } = this.state
+                          podcasts.map((podcast) => {
+                            const { loggedIn, transitTime,} = this.state
                             return (
                               <PodcastItem
                                 key={podcast.id}
@@ -351,7 +321,7 @@ class App extends Component {
                             );
                           })
                         }
-                      </ul>
+                      </ul>}
                     </div>
           }
 
